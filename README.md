@@ -33,14 +33,22 @@ make help           # Afficher toutes les commandes disponibles
 Les principales :
 
 ```bash
-make up             # Démarrer la stack
+make build          # Construire les images Docker (production + dev)
+make up             # Démarrer la stack (lance build automatiquement)
 make down           # Arrêter la stack
+make restart        # Redémarrer la stack
 make logs           # Suivre les logs
 make shell          # Shell dans le conteneur
+make db-shell       # Shell MariaDB
+make install        # Exécuter composer install
 make composer c=""  # Exécuter Composer
 make wp c=""        # Exécuter WP-CLI
 make lint           # Vérifier le style (Pint)
+make lint-fix       # Corriger le style automatiquement
 make test           # Lancer les tests (Pest)
+make db-export      # Exporter la base dans db-dump.sql
+make db-import      # Importer db-dump.sql dans la base
+make clean          # Supprimer conteneurs, volumes et images (reset complet)
 ```
 
 ## Structure du projet
@@ -50,6 +58,8 @@ config/              # Configuration WordPress (Bedrock)
 web/app/             # Thèmes, plugins, mu-plugins
 web/wp/              # WordPress core (géré par Composer, ne pas modifier)
 docker/              # Nginx, supervisord, entrypoint
+Dockerfile           # Image de production
+Dockerfile.dev       # Image de développement (étend la production)
 tests/               # Tests (Pest)
 ```
 
@@ -65,4 +75,4 @@ Le site se déploie sur Coolify via `docker-compose.yml`. La documentation techn
 
 ## Licence
 
-[MIT](LICENSE.md)
+MIT

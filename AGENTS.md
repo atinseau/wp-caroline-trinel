@@ -14,6 +14,7 @@ All commands run inside Docker via the Makefile. **No local PHP installation req
 make up                # Start the dev stack
 make down              # Stop the dev stack
 make restart           # Restart the dev stack
+make build             # Build the dev image (builds production first, then dev on top)
 make logs              # Tail all container logs
 make shell             # Open a shell in the app container
 make composer c="..."  # Run a Composer command
@@ -43,8 +44,10 @@ web/
 ├── index.php                # Entry point
 ├── wp-config.php            # Bootstraps vendor/autoload.php + config/application.php
 ├── app/                     # WordPress content directory (wp-content equivalent)
+│   ├── cache/               # Cache directory
 │   ├── mu-plugins/          # Must-use plugins (auto-loaded via bedrock-autoloader)
 │   │   ├── bedrock-autoloader.php
+│   │   ├── bedrock-disallow-indexing/  # Composer-installed mu-plugin
 │   │   └── smtp-mailer.php  # Routes emails via SMTP when SMTP_HOST is set
 │   ├── plugins/             # Composer-managed plugins
 │   └── themes/              # Themes (custom themes go here)
@@ -80,24 +83,28 @@ tests/
 
 Laravel Pint uses the **PER** preset. Excluded from linting:
 
-- `web/wp/` (WordPress core)
-- `web/app/plugins/` (third-party plugins)
-- `web/app/themes/twentytwentyfive/` (default theme)
+- `web/wp` (WordPress core)
+- `web/app/mu-plugins/bedrock-disallow-indexing` (Composer-managed mu-plugin)
+- `web/app/plugins` (third-party plugins)
+- `web/app/themes/twentytwentyfive` (default theme)
 
 Custom theme and plugin code in `web/app/` should be linted.
 
 ## Docker
 
-The project uses a single multi-stage `Dockerfile` with two targets:
+The project uses two separate Dockerfiles:
 
-- **`production`** — Optimised image for deployment (Composer deps baked in, no dev tools)
-- **`development`** — Extends `production` with Composer, WP-CLI, Xdebug, and git
+- **`Dockerfile`** — Multi-stage build with a `composer-build` stage (installs Composer dependencies) and a `production` runtime stage (optimised image for deployment, deps baked in, no dev tools)
+- **`Dockerfile.dev`** — Extends the production image (`FROM wp-caroline-trinel-app:latest`) and adds dev tools: Composer, WP-CLI, Xdebug, and git
+
+The `make build` command first builds the production image (`docker build -t wp-caroline-trinel-app:latest -f Dockerfile .`), then builds the dev image via `docker-compose.dev.yml` which uses `Dockerfile.dev`.
 
 ### Key Files
 
 | File | Role |
 |---|---|
-| `Dockerfile` | Multi-stage: `production` target + `development` target on top |
+| `Dockerfile` | Multi-stage: `composer-build` stage + `production` runtime target |
+| `Dockerfile.dev` | Development image, extends production image with dev tools |
 | `docker-compose.yml` | Production stack (Coolify deployment) |
 | `docker-compose.dev.yml` | Development stack (extends production via `extends:`) |
 | `.dockerignore` | Keeps build context lean |
@@ -189,9 +196,9 @@ All variables below must be set in Coolify's service environment:
 
 1. Create a new **Docker Compose** resource in Coolify pointing to this repo.
 2. Set all required environment variables in the Coolify UI.
-3. Coolify handles TLS termination via its built-in reverse proxy — the container only exposes port 80.
+3. Coolify handles TLS termination via its built-in reverse proxy — the production `docker-compose.yml` does not expose ports; Coolify routes traffic to the container directly.
 4. `DB_HOST` is set to `db:3306` automatically in `docker-compose.yml`; do **not** override it unless you use an external database.
 
 #### Container Architecture
 
-The `app` container bundles **PHP-FPM 8.3** and **Nginx** managed by **supervisord** in a single Alpine-based image. The `development` target extends this exact image with dev tools (Composer, WP-CLI, Xdebug, git) — ensuring dev and production environments are identical at the runtime level.
+The `app` container bundles **PHP-FPM 8.3** and **Nginx** managed by **supervisord** in a single Alpine-based image. The `Dockerfile` uses a `composer-build` stage to install dependencies, then copies them into the final `production` stage. The `Dockerfile.dev` extends this production image with dev tools (Composer, WP-CLI, Xdebug, git) — ensuring dev and production environments are identical at the runtime level.
