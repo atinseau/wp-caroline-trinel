@@ -1,0 +1,59 @@
+# ==============================================================================
+# Development Stack
+# ==============================================================================
+# Extends the production compose file. Only overrides what differs for dev.
+# All environment variables are loaded from .env.development (source of truth).
+# Usage: docker compose -f docker-compose.dev.yml up -d --build
+# ==============================================================================
+
+services:
+  app:
+    extends:
+      file: docker-compose.yml
+      service: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    env_file: .env.development
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      # Docker-specific overrides (not in .env.development)
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+    volumes:
+      - .:/var/www/html
+      - uploads:/var/www/html/web/app/uploads
+    networks:
+      - internal
+    healthcheck:
+      disable: true
+
+  db:
+    extends:
+      file: docker-compose.yml
+      service: db
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-wordpress}
+      MARIADB_USER: ${DB_USER:-wordpress}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-wordpress}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-wordpress}
+
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+    networks:
+      - internal
+
+volumes:
+  db_data:
+    driver: local
+  uploads:
+    driver: local
+
+networks:
+  internal:
+    driver: bridge

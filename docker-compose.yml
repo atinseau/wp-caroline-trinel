@@ -1,0 +1,65 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_NAME: ${DB_NAME:-wordpress}
+      DB_USER: ${DB_USER:-wordpress}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      DB_HOST: db:3306
+      WP_ENV: ${WP_ENV:-production}
+      WP_HOME: ${WP_HOME:?WP_HOME is required}
+      WP_SITEURL: ${WP_SITEURL:-${WP_HOME}/wp}
+      AUTH_KEY: ${AUTH_KEY:?AUTH_KEY is required}
+      SECURE_AUTH_KEY: ${SECURE_AUTH_KEY:?SECURE_AUTH_KEY is required}
+      LOGGED_IN_KEY: ${LOGGED_IN_KEY:?LOGGED_IN_KEY is required}
+      NONCE_KEY: ${NONCE_KEY:?NONCE_KEY is required}
+      AUTH_SALT: ${AUTH_SALT:?AUTH_SALT is required}
+      SECURE_AUTH_SALT: ${SECURE_AUTH_SALT:?SECURE_AUTH_SALT is required}
+      LOGGED_IN_SALT: ${LOGGED_IN_SALT:?LOGGED_IN_SALT is required}
+      NONCE_SALT: ${NONCE_SALT:?NONCE_SALT is required}
+    volumes:
+      - uploads:/var/www/html/web/app/uploads
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "curl", "-fsL", "-o", "/dev/null", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-wordpress}
+      MARIADB_USER: ${DB_USER:-wordpress}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-${DB_PASSWORD}}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+volumes:
+  db_data:
+    driver: local
+  uploads:
+    driver: local
+
+networks:
+  internal:
+    driver: bridge
