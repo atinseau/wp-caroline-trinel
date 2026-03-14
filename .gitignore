@@ -25,6 +25,7 @@ db-dump.sql
 !.env.example
 !.env.development
 
+
 # Composer
 /vendor
 auth.json

@@ -1,5 +1,6 @@
 services:
   app:
+    container_name: caroline-trinel-app
     build:
       context: .
       dockerfile: Dockerfile
@@ -36,6 +37,7 @@ services:
       retries: 3
 
   db:
+    container_name: caroline-trinel-db
     image: mariadb:11
     restart: unless-stopped
     environment:
