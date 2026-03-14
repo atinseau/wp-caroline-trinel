@@ -15,7 +15,7 @@ services:
       DB_HOST: db:3306
       WP_ENV: ${WP_ENV:-production}
       WP_HOME: ${SERVICE_URL_APP}
-      WP_SITEURL: ${SERVICE_URL_APP}/wp
+
       AUTH_KEY: ${AUTH_KEY:?AUTH_KEY is required}
       SECURE_AUTH_KEY: ${SECURE_AUTH_KEY:?SECURE_AUTH_KEY is required}
       LOGGED_IN_KEY: ${LOGGED_IN_KEY:?LOGGED_IN_KEY is required}
