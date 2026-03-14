@@ -1,0 +1,37 @@
+# ---- Development image: production stack + dev tools ----
+FROM wp-caroline-trinel-app:latest
+
+# Install Xdebug
+RUN apk add --no-cache --virtual .xdebug-deps linux-headers $PHPIZE_DEPS \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && apk del .xdebug-deps \
+    && rm -rf /tmp/*
+
+# Xdebug configuration (trigger mode — only activates with XDEBUG_TRIGGER)
+RUN { \
+    echo 'xdebug.mode=debug'; \
+    echo 'xdebug.client_host=host.docker.internal'; \
+    echo 'xdebug.client_port=9003'; \
+    echo 'xdebug.start_with_request=trigger'; \
+} > "$PHP_INI_DIR/conf.d/xdebug.ini"
+
+# Copy Composer from official image
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Install WP-CLI
+RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x /usr/local/bin/wp
+
+# Install git (needed by Composer for some source installs)
+RUN apk add --no-cache git
+
+# Entrypoint: auto composer install if vendor/ missing, then exec CMD
+COPY docker/dev-entrypoint.sh /usr/local/bin/dev-entrypoint.sh
+RUN chmod +x /usr/local/bin/dev-entrypoint.sh
+
+# Disable production health check in dev
+HEALTHCHECK NONE
+
+ENTRYPOINT ["/usr/local/bin/dev-entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

@@ -2,8 +2,8 @@
 # Development Stack
 # ==============================================================================
 # Extends the production compose file. Only overrides what differs for dev.
+# Dockerfile.dev extends the production image (wp-caroline-trinel-app:latest).
 # All environment variables are loaded from .env.development (source of truth).
-# Usage: docker compose -f docker-compose.dev.yml up -d --build
 # ==============================================================================
 
 services:
@@ -13,8 +13,7 @@ services:
       service: app
     build:
       context: .
-      dockerfile: Dockerfile
-      target: development
+      dockerfile: Dockerfile.dev
     env_file: .env.development
     ports:
       - "${APP_PORT:-8080}:80"

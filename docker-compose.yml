@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
+    image: wp-caroline-trinel-app:latest
     restart: unless-stopped
     depends_on:
       db:

@@ -14,7 +14,7 @@ Aucune installation locale de PHP, Composer ou Node n'est nécessaire.
 ```bash
 git clone <repo-url>
 cd wp-caroline-trinel
-make setup
+make up
 ```
 
 | Service   | URL                  |

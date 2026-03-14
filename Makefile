@@ -11,9 +11,19 @@ DB      = $(COMPOSE) exec db
 
 # ── Lifecycle ───────────────────────────────────────────────────
 
+.PHONY: build
+build: ## Build the dev image (builds production first, then dev on top)
+	docker build -t wp-caroline-trinel-app:latest -f Dockerfile .
+	$(COMPOSE) build
+
 .PHONY: up
-up: ## Start the dev stack
-	$(COMPOSE) up -d --build
+up: build ## Start the dev stack
+	$(COMPOSE) up -d
+	@echo ""
+	@echo "✔ Stack is running:"
+	@echo "  WordPress  → http://localhost:$${APP_PORT:-8080}"
+	@echo "  Mailpit    → http://localhost:$${MAILPIT_PORT:-8025}"
+	@echo ""
 
 .PHONY: down
 down: ## Stop the dev stack
@@ -79,16 +89,7 @@ db-import: ## Import db-dump.sql into the database
 	$(DB) mariadb -u $${DB_USER:-wordpress} -p$${DB_PASSWORD:-wordpress} $${DB_NAME:-wordpress} < db-dump.sql
 	@echo "Database imported from db-dump.sql"
 
-# ── First-time setup ───────────────────────────────────────────
 
-.PHONY: setup
-setup: ## First-time project setup: build and start the dev stack
-	$(COMPOSE) up -d --build
-	@echo ""
-	@echo "✔ Stack is running:"
-	@echo "  WordPress  → http://localhost:$${APP_PORT:-8080}"
-	@echo "  Mailpit    → http://localhost:$${MAILPIT_PORT:-8025}"
-	@echo ""
 
 # ── Help ────────────────────────────────────────────────────────
 

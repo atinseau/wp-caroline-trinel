@@ -11,7 +11,6 @@ WordPress site built on [Roots Bedrock](https://roots.io/bedrock/) — a modern 
 All commands run inside Docker via the Makefile. **No local PHP installation required.**
 
 ```bash
-make setup             # First-time: build, install, start
 make up                # Start the dev stack
 make down              # Stop the dev stack
 make restart           # Restart the dev stack
@@ -67,7 +66,7 @@ tests/
 
 ## Environment Setup
 
-**Local development:** No `.env` file needed. All dev variables live in `.env.development` (committed to git, source of truth). The Makefile passes it to Docker Compose via `--env-file .env.development` so values are available for both YAML interpolation and container injection. Just run `make setup`.
+**Local development:** No `.env` file needed. All dev variables live in `.env.development` (committed to git, source of truth). The Makefile passes it to Docker Compose via `--env-file .env.development` so values are available for both YAML interpolation and container injection. Just run `make up`.
 
 **Production/staging:** Copy `.env.example` to `.env` and fill in:
 
@@ -121,7 +120,7 @@ The dev stack reproduces the production environment exactly, with dev tools laye
 ```bash
 git clone <repo>
 cd wp-caroline-trinel
-make setup
+make up
 # → WordPress at http://localhost:8080
 # → Mailpit at http://localhost:8025
 ```

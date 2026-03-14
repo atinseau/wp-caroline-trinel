@@ -11,7 +11,8 @@ RUN composer install \
     --no-interaction \
     --no-progress \
     --optimize-autoloader \
-    --prefer-dist
+    --prefer-dist \
+    && mkdir -p web/app/plugins web/app/themes web/app/mu-plugins
 
 # ---- Runtime stage: PHP-FPM + Nginx ----
 FROM php:8.3-fpm-alpine AS production
@@ -103,10 +104,17 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 # PHP-FPM: listen on a unix socket for performance
-RUN sed -i 's|listen = 127.0.0.1:9000|listen = /var/run/php-fpm.sock|' /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo 'listen.owner = nginx' >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo 'listen.group = nginx' >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo 'listen.mode = 0660' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+# Overwrite zz-docker.conf entirely (loaded last, overrides docker.conf's `listen = 9000`)
+RUN { \
+    echo '[global]'; \
+    echo 'daemonize = no'; \
+    echo ''; \
+    echo '[www]'; \
+    echo 'listen = /var/run/php-fpm.sock'; \
+    echo 'listen.owner = nginx'; \
+    echo 'listen.group = nginx'; \
+    echo 'listen.mode = 0660'; \
+} > /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Create nginx user/group alignment (Alpine nginx runs as nginx user)
 RUN addgroup www-data nginx 2>/dev/null || true
@@ -117,42 +125,4 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD curl -fsL -o /dev/null http://localhost/ || exit 1
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-# ---- Development target: same stack + dev tools ----
-FROM production AS development
-
-# Install Xdebug
-RUN apk add --no-cache --virtual .xdebug-deps linux-headers $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && apk del .xdebug-deps \
-    && rm -rf /tmp/*
-
-# Xdebug configuration (trigger mode — only activates with XDEBUG_TRIGGER)
-RUN { \
-    echo 'xdebug.mode=debug'; \
-    echo 'xdebug.client_host=host.docker.internal'; \
-    echo 'xdebug.client_port=9003'; \
-    echo 'xdebug.start_with_request=trigger'; \
-} > "$PHP_INI_DIR/conf.d/xdebug.ini"
-
-# Copy Composer from official image
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Install WP-CLI
-RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-    && chmod +x /usr/local/bin/wp
-
-# Install git (needed by Composer for some source installs)
-RUN apk add --no-cache git
-
-# Entrypoint: auto composer install if vendor/ missing, then exec CMD
-COPY docker/dev-entrypoint.sh /usr/local/bin/dev-entrypoint.sh
-RUN chmod +x /usr/local/bin/dev-entrypoint.sh
-
-# Disable production health check in dev
-HEALTHCHECK NONE
-
-ENTRYPOINT ["/usr/local/bin/dev-entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
