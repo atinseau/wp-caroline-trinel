@@ -18,6 +18,7 @@ web/.htaccess
 
 # Database dumps
 db-dump.sql
+remote-db-dump.sql
 
 # Dotenv
 .env

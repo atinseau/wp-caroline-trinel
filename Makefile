@@ -92,6 +92,7 @@ db-import: ## Import db-dump.sql into the database
 # ── Remote (Coolify production) ─────────────────────────────────
 
 REMOTE_SHELL = ./scripts/remote-shell.sh
+REMOTE_DB    = ./scripts/remote-db.sh
 
 .PHONY: remote-shell
 remote-shell: ## Open a shell in the remote WordPress container
@@ -101,9 +102,17 @@ remote-shell: ## Open a shell in the remote WordPress container
 remote-db-shell: ## Open a shell in the remote MariaDB container
 	$(REMOTE_SHELL) db
 
+.PHONY: remote-db-export
+remote-db-export: ## Export the remote database to remote-db-dump.sql
+	$(REMOTE_DB) export
+
+.PHONY: remote-db-import
+remote-db-import: ## Import remote-db-dump.sql into the remote database
+	$(REMOTE_DB) import
+
 .PHONY: remote-logs
 remote-logs: ## Tail logs of the remote WordPress container
-	$(REMOTE_SHELL) app tail -f /var/log/nginx/error.log /var/log/php-fpm/error.log
+	$(REMOTE_SHELL) --logs app
 
 # ── Help ────────────────────────────────────────────────────────
 

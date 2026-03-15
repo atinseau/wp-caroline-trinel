@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name:  SMTP Mailer
  * Description:  Routes WordPress emails through an SMTP server when SMTP_HOST is defined. Designed for use with Mailpit in development.

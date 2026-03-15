@@ -92,9 +92,10 @@ COPY --from=composer-build /app/web/app/themes ./web/app/themes
 # Copy the rest of the application
 COPY . .
 
-# Ensure the uploads directory exists and is writable
+# Ensure the uploads and cache directories exist, then set ownership
+# www-data must own the tree so WordPress filesystem checks pass
 RUN mkdir -p web/app/uploads web/app/cache \
-    && chown -R www-data:www-data web/app/uploads web/app/cache \
+    && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 web/app/uploads web/app/cache
 
 # Nginx configuration

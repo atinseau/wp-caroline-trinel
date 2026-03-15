@@ -26,6 +26,8 @@ make test              # Run tests (Pest)
 make db-shell          # Open a MariaDB shell
 make db-export         # Export the database to db-dump.sql
 make db-import         # Import db-dump.sql into the database
+make remote-db-export  # Export the remote (Coolify) database to remote-db-dump.sql
+make remote-db-import  # Import remote-db-dump.sql into the remote database
 make clean             # Remove containers, volumes, images (full reset)
 make help              # Show all available commands
 ```
