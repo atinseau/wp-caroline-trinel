@@ -1,6 +1,5 @@
 services:
   app:
-    container_name: caroline-trinel-app
     build:
       context: .
       dockerfile: Dockerfile
@@ -30,14 +29,13 @@ services:
     networks:
       - internal
     healthcheck:
-      test: ["CMD", "curl", "-fsL", "-o", "/dev/null", "http://localhost/"]
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "-w", "", "http://localhost/"]
       interval: 30s
       timeout: 5s
       start_period: 30s
       retries: 3
 
   db:
-    container_name: caroline-trinel-db
     image: mariadb:11
     restart: unless-stopped
     environment:

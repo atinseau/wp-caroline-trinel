@@ -101,10 +101,6 @@ remote-shell: ## Open a shell in the remote WordPress container
 remote-db-shell: ## Open a shell in the remote MariaDB container
 	$(REMOTE_SHELL) db
 
-.PHONY: remote-wp
-remote-wp: ## Run a remote WP-CLI command — usage: make remote-wp c="plugin list"
-	$(REMOTE_SHELL) app wp --allow-root $(c)
-
 .PHONY: remote-logs
 remote-logs: ## Tail logs of the remote WordPress container
 	$(REMOTE_SHELL) app tail -f /var/log/nginx/error.log /var/log/php-fpm/error.log

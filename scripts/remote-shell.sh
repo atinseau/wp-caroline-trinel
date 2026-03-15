@@ -24,6 +24,14 @@ if [ -z "$REMOTE" ]; then
   exit 1
 fi
 
+SERVICE_ID="${COOLIFY_SERVICE_ID:-}"
+if [ -z "$SERVICE_ID" ]; then
+  echo "Error: COOLIFY_SERVICE_ID is not set." >&2
+  echo "Set it in .env.development or export it before running this script." >&2
+  echo "You can find it in the Coolify URL or container names (e.g. app-XXXXXX...)." >&2
+  exit 1
+fi
+
 SERVICE="${1:-}"
 if [ -z "$SERVICE" ]; then
   echo "Usage: $0 <app|db> [command...]" >&2
@@ -44,11 +52,11 @@ case "$SERVICE" in
     ;;
 esac
 
-CONTAINER=$(ssh "$REMOTE" "sudo docker ps --format '{{.Names}}' | grep 'caroline-trinel-${SERVICE}'" 2>/dev/null | head -1)
+CONTAINER=$(ssh "$REMOTE" "sudo docker ps --format '{{.Names}}' | grep '^${SERVICE}-${SERVICE_ID}'" 2>/dev/null | head -1)
 
 if [ -z "$CONTAINER" ]; then
-  echo "Error: no '$SERVICE' container found on remote host." >&2
-  echo "Available containers:" >&2
+  echo "Error: no '$SERVICE' container found for service ID '$SERVICE_ID'." >&2
+  echo "Available containers on remote host:" >&2
   ssh "$REMOTE" "sudo docker ps --format '{{.Names}}'" 2>/dev/null | sed 's/^/  /'
   exit 1
 fi
