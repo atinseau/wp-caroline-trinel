@@ -92,6 +92,10 @@ COPY --from=composer-build /app/web/app/themes ./web/app/themes
 # Copy the rest of the application
 COPY . .
 
+# Install WP-CLI for maintenance operations
+RUN curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp \
+    && chmod +x /usr/local/bin/wp
+
 # Ensure the uploads and cache directories exist, then set ownership
 # www-data must own the tree so WordPress filesystem checks pass
 RUN mkdir -p web/app/uploads web/app/cache \

@@ -250,10 +250,10 @@ push_export() {
   # ── 3. Save metadata ───────────────────────────────────────
   {
     echo "DIRECTION=push"
-    echo "SOURCE_URL=$LOCAL_URL"
-    echo "EXPORT_DATE=$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-    echo "ACTIVE_STYLESHEET=$ACTIVE_STYLESHEET"
-    echo "ACTIVE_TEMPLATE=$ACTIVE_TEMPLATE"
+    echo "SOURCE_URL='$LOCAL_URL'"
+    echo "EXPORT_DATE='$(date -u '+%Y-%m-%d %H:%M:%S UTC')'"
+    echo "ACTIVE_STYLESHEET='$ACTIVE_STYLESHEET'"
+    echo "ACTIVE_TEMPLATE='$ACTIVE_TEMPLATE'"
   } > "$EXPORT_DIR/metadata.env"
 
   ok "Export complete → $EXPORT_DIR/"
@@ -282,7 +282,7 @@ push_sync_uploads() {
   ok "Local uploads copied to temp dir ($(du -sh "$LOCAL_UPLOADS_TMP" | cut -f1))"
 
   info "Syncing uploads to remote production…"
-  rsync -avz --progress \
+  rsync -avz --progress --rsync-path="sudo rsync" \
     "$LOCAL_UPLOADS_TMP/" \
     "$REMOTE:$REMOTE_UPLOADS_MOUNT/"
 
@@ -458,10 +458,10 @@ pull_export() {
   # ── 3. Save metadata ───────────────────────────────────────
   {
     echo "DIRECTION=pull"
-    echo "SOURCE_URL=$PROD_WP_HOME"
-    echo "EXPORT_DATE=$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-    echo "ACTIVE_STYLESHEET=$ACTIVE_STYLESHEET"
-    echo "ACTIVE_TEMPLATE=$ACTIVE_TEMPLATE"
+    echo "SOURCE_URL='$PROD_WP_HOME'"
+    echo "EXPORT_DATE='$(date -u '+%Y-%m-%d %H:%M:%S UTC')'"
+    echo "ACTIVE_STYLESHEET='$ACTIVE_STYLESHEET'"
+    echo "ACTIVE_TEMPLATE='$ACTIVE_TEMPLATE'"
   } > "$EXPORT_DIR/metadata.env"
 
   ok "Export complete → $EXPORT_DIR/"
@@ -486,7 +486,7 @@ pull_sync_uploads() {
   mkdir -p "$LOCAL_UPLOADS_TMP"
 
   info "Downloading uploads from remote production…"
-  rsync -avz --progress \
+  rsync -avz --progress --rsync-path="sudo rsync" \
     "$REMOTE:$REMOTE_UPLOADS_MOUNT/" \
     "$LOCAL_UPLOADS_TMP/"
   ok "Remote uploads downloaded ($(du -sh "$LOCAL_UPLOADS_TMP" | cut -f1))"
