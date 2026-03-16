@@ -175,8 +175,17 @@ ini_set('display_errors', '0');
 /**
  * Allow WordPress to detect HTTPS when used behind a reverse proxy or a load balancer
  * See https://codex.wordpress.org/Function_Reference/is_ssl#Notes
+ *
+ * Checks multiple headers that reverse proxies (Coolify/Traefik, Cloudflare,
+ * AWS ALB, etc.) may set, and falls back to the WP_HOME scheme so that
+ * WordPress never redirect-loops between HTTP and HTTPS.
  */
-if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+if (
+    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
+    || (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] === '443')
+    || (env('WP_HOME') && str_starts_with(env('WP_HOME'), 'https://'))
+) {
     $_SERVER['HTTPS'] = 'on';
 }
 
