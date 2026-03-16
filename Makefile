@@ -114,6 +114,42 @@ remote-db-import: ## Import remote-db-dump.sql into the remote database
 remote-logs: ## Tail logs of the remote WordPress container
 	$(REMOTE_SHELL) --logs app
 
+# ── Content migration (bidirectional) ───────────────────────────
+
+CONTENT_MIGRATE = ./scripts/content-migrate.sh
+
+.PHONY: content-push
+content-push: ## Push local content → production (full: export + uploads + import)
+	$(CONTENT_MIGRATE) push full
+
+.PHONY: content-pull
+content-pull: ## Pull production content → local (full: export + uploads + import)
+	$(CONTENT_MIGRATE) pull full
+
+.PHONY: content-push-export
+content-push-export: ## Export local content → content-export/
+	$(CONTENT_MIGRATE) push export
+
+.PHONY: content-push-import
+content-push-import: ## Import content-export/ → production (with URL search-replace)
+	$(CONTENT_MIGRATE) push import
+
+.PHONY: content-push-uploads
+content-push-uploads: ## Sync local uploads (media) → production
+	$(CONTENT_MIGRATE) push sync-uploads
+
+.PHONY: content-pull-export
+content-pull-export: ## Export production content → content-export/
+	$(CONTENT_MIGRATE) pull export
+
+.PHONY: content-pull-import
+content-pull-import: ## Import content-export/ → local (with URL search-replace)
+	$(CONTENT_MIGRATE) pull import
+
+.PHONY: content-pull-uploads
+content-pull-uploads: ## Sync production uploads (media) → local
+	$(CONTENT_MIGRATE) pull sync-uploads
+
 # ── Help ────────────────────────────────────────────────────────
 
 .PHONY: help

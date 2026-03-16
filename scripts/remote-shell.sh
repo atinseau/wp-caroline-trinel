@@ -17,7 +17,7 @@
 set -e
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-ENV_FILE="$SCRIPT_DIR/../.env.development"
+ENV_FILE="$SCRIPT_DIR/../.env.production"
 
 if [ -f "$ENV_FILE" ]; then
   . "$ENV_FILE"
@@ -39,14 +39,14 @@ fi
 REMOTE="${COOLIFY_REMOTE_HOST:-}"
 if [ -z "$REMOTE" ]; then
   echo "Error: COOLIFY_REMOTE_HOST is not set." >&2
-  echo "Set it in .env.development or export it before running this script." >&2
+  echo "Set it in .env.production or export it before running this script." >&2
   exit 1
 fi
 
 SERVICE_ID="${COOLIFY_SERVICE_ID:-}"
 if [ -z "$SERVICE_ID" ]; then
   echo "Error: COOLIFY_SERVICE_ID is not set." >&2
-  echo "Set it in .env.development or export it before running this script." >&2
+  echo "Set it in .env.production or export it before running this script." >&2
   echo "You can find it in the Coolify URL or container names (e.g. app-XXXXXX...)." >&2
   exit 1
 fi

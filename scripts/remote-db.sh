@@ -7,8 +7,8 @@
 #   ./scripts/remote-db.sh import [file]   # push local file → remote DB  (default: remote-db-dump.sql)
 #
 # Environment files:
-#   .env.development   SSH/Coolify config (COOLIFY_REMOTE_HOST, COOLIFY_SERVICE_ID)
-#   .env.production    Production DB credentials (DB_NAME, DB_USER, DB_PASSWORD)
+#   .env.production    Production DB credentials + Coolify config
+#                      (DB_NAME, DB_USER, DB_PASSWORD, COOLIFY_REMOTE_HOST, COOLIFY_SERVICE_ID)
 
 set -e
 

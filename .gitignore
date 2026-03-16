@@ -20,6 +20,9 @@ web/.htaccess
 db-dump.sql
 remote-db-dump.sql
 
+# Content migration exports
+content-export/
+
 # Dotenv
 .env
 .env.*

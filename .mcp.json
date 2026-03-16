@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "wordpress-local": {
+      "command": "./scripts/mcp-stdio.sh"
+    },
+    "wordpress-production": {
+      "command": "./scripts/mcp-remote.sh"
+    }
+  }
+}

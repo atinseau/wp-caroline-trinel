@@ -18,6 +18,10 @@ services:
     ports:
       - "${APP_PORT:-8080}:80"
     environment:
+      # Override WP_HOME which is set to ${SERVICE_URL_APP:-} in production
+      # (Coolify variable). environment: takes precedence over env_file:,
+      # so we must explicitly set it here for dev.
+      WP_HOME: ${WP_HOME:-http://localhost:8080}
       # Docker-specific overrides (not in .env.development)
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
