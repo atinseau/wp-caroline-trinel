@@ -367,7 +367,7 @@ describe('wp-rest/request', function () {
 describe('wp-rest/list-routes', function () {
 
     test('returns all routes without filters', function () {
-        $result = executeAbility('wp-rest/list-routes');
+        $result = callToolParsed('wp-rest-list-routes');
 
         expect($result)->toHaveKey('routes');
         expect($result)->toHaveKey('total');
